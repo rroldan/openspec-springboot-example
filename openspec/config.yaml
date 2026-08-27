@@ -2,33 +2,43 @@ schema: spec-driven
 githubCopilot:
   cloudAgent: true
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  Project: openspec-springboot-example — REST-only backend for the Spring Boot sample app no UI
+  Tech stack: Java, Spring Boot
+  Build tool: Maven
+  Architecture: Layered (Controller -> Service -> Repository), DDD-ish boundaries per module
+  Persistence: Spring Data JPA with PostgreSQL, Flyway for migrations
+  API style: REST, versioned under /api/v1
+  API docs: springdoc-openapi generates the OpenAPI spec from annotated controllers/DTOs
+  Security: Spring Security with role-based authorization
+  Testing: JUnit 5 + Mockito for unit tests, Testcontainers for integration tests
+  Style: Follow Google Java Style
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  proposal:
+    - Note database migration requirements (new Flyway scripts under db/migration)
+    - Identify affected layers and any breaking-change risk to public API contracts
 
-# Per-operation guidance (optional)
-# Add advisory guidance for how apply and archive work should be conducted.
-# This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing
+  specs:
+    - Use Given/When/Then format for endpoint behavior
+    - Specify HTTP status codes and error response shapes consistent with existing controllers
+    - If the change affects the API surface, describe the resulting OpenAPI spec delta
+
+  design:
+    - Note which layer(s) are affected (controller, service, repository, entity)
+    - Call out new dependencies or Spring beans introduced
+    - Document any changes to the domain model or JPA entities
+
+  tasks:
+    - Include a task for writing/updating Flyway migration scripts when schema changes
+    - Include a task for verifying the generated OpenAPI docs reflect endpoint changes
+    - Include a task for tests covering the new/changed behavior
+
+operations:
+  apply:
+    guidance:
+      - Run focused tests before the full suite
+      - Verify Flyway migrations run cleanly on a fresh schema
+  archive:
+    guidance:
+      - Keep the completion summary concise
