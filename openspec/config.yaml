@@ -4,9 +4,9 @@ githubCopilot:
 
 context: |
   Project: openspec-springboot-example — REST-only backend for the Spring Boot sample app no UI
-  Tech stack: Java, Spring Boot
+  Tech stack: Java 21, Spring Boot 4
   Build tool: Maven
-  Architecture: Layered (Controller -> Service -> Repository), DDD-ish boundaries per module
+  Architecture: Enforcing Clean Architecture in Spring Boot Using Taikai
   Persistence: Spring Data JPA with PostgreSQL, Flyway for migrations
   API style: REST, versioned under /api/v1
   API docs: springdoc-openapi generates the OpenAPI spec from annotated controllers/DTOs
@@ -20,7 +20,7 @@ rules:
     - Identify affected layers and any breaking-change risk to public API contracts
 
   specs:
-    - Use Given/When/Then format for endpoint behavior
+    - Use Given/When/Then format mandatory for specs
     - Specify HTTP status codes and error response shapes consistent with existing controllers
     - If the change affects the API surface, describe the resulting OpenAPI spec delta
 
