@@ -3,7 +3,7 @@ githubCopilot:
   cloudAgent: true
 
 context: |
-  Project: openspec-springboot-example — REST-only backend for the Spring Boot sample app no UI
+  Project: openspec-springboot-example — REST-only backend for the Spring Boot Task Manager Project sample app no UI
   Tech stack: Java 21, Spring Boot 4
   Build tool: Maven
   Architecture: Enforcing Clean Architecture in Spring Boot Using ArchUnit 1.5
