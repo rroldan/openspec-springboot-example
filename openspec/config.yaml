@@ -6,7 +6,7 @@ context: |
   Project: openspec-springboot-example — REST-only backend for the Spring Boot sample app no UI
   Tech stack: Java 21, Spring Boot 4
   Build tool: Maven
-  Architecture: Enforcing Clean Architecture in Spring Boot Using Taikai
+  Architecture: Enforcing Clean Architecture in Spring Boot Using ArchUnit 1.5
   Persistence: Spring Data JPA with PostgreSQL, Flyway for migrations
   API style: REST, versioned under /api/v1
   API docs: springdoc-openapi generates the OpenAPI spec from annotated controllers/DTOs
