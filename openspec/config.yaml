@@ -11,8 +11,7 @@ context: |
   API style: REST, versioned under /api/v1
   API docs: springdoc-openapi generates the OpenAPI spec from annotated controllers/DTOs
   Security: Spring Security with role-based authorization
-  Testing: JUnit 5 + Mockito for unit tests, Testcontainers for integration tests
-  Style: Follow Google Java Style
+  Testing: JUnit 5 + Mockito for unit tests, mutation testing with Pitest, Testcontainers for integration tests
 
 rules:
   proposal:
