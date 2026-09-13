@@ -4,7 +4,7 @@ githubCopilot:
 
 context: |
   Project: openspec-springboot-example — REST-only backend for the Spring Boot Task Manager Project sample app no UI
-  Tech stack: Java 21, Spring Boot 4
+  Tech stack: Java 21 lts, Spring Boot 4 lts
   Build tool: Maven
   Architecture: Enforcing Clean Architecture in Spring Boot Using ArchUnit 1.5
   Persistence: Spring Data JPA with PostgreSQL, Flyway for migrations
