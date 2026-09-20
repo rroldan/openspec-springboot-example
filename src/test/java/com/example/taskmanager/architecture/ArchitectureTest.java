@@ -26,4 +26,10 @@ class ArchitectureTest {
             noClasses().that().resideInAnyPackage("..adapters..")
                     .should().dependOnClassesThat()
                     .resideInAnyPackage("..infrastructure..");
+
+    @ArchTest
+    static final ArchRule taskApplicationUsesPortsNotAdapters =
+            noClasses().that().resideInAnyPackage("..application.service..")
+                    .should().dependOnClassesThat()
+                    .resideInAnyPackage("..adapters..");
 }

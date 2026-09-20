@@ -52,7 +52,44 @@ class FoundationIntegrationIT {
         assertThat(health.statusCode()).isEqualTo(200);
         assertThat(health.body()).contains("\"status\":\"UP\"");
         assertThat(jdbcTemplate.queryForObject(
-                "select count(*) from flyway_schema_history", Integer.class)).isEqualTo(1);
+                "select count(*) from flyway_schema_history", Integer.class)).isEqualTo(2);
+    }
+
+    @Test
+    void createsTaskWithServerManagedLifecycleFields() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        var response = client.send(HttpRequest.newBuilder(
+                        URI.create("http://localhost:" + port + "/api/v1/tasks"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString("""
+                        {"title":"release notes","description":"summarize changes","status":"DONE"}
+                        """))
+                .build(), HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(201);
+        assertThat(response.body()).contains(
+                "\"title\":\"release notes\"",
+                "\"description\":\"summarize changes\"",
+                "\"status\":\"TODO\"",
+                "\"createdAt\"",
+                "\"updatedAt\"");
+        assertThat(jdbcTemplate.queryForObject(
+                "select count(*) from tasks where title = 'release notes'", Integer.class)).isEqualTo(1);
+    }
+
+    @Test
+    void documentsTaskCreationInOpenApi() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        var response = client.send(request("/v3/api-docs"), HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.body()).contains(
+                "\"/api/v1/tasks\"",
+                "\"post\"",
+                "\"201\"",
+                "\"400\"",
+                "CreateTaskRequest",
+                "TaskResponse");
     }
 
     private HttpRequest request(String path) {
