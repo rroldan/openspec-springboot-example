@@ -1,0 +1,274 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "Task Manager API",
+    "description" : "REST foundation for the Task Manager project",
+    "version" : "v1"
+  },
+  "tags" : [ {
+    "name" : "Application",
+    "description" : "Versioned application foundation endpoints"
+  }, {
+    "name" : "Tasks",
+    "description" : "Task management endpoints"
+  }, {
+    "name" : "Actuator",
+    "description" : "Monitor and interact",
+    "externalDocs" : {
+      "description" : "Spring Boot Actuator Web API Documentation",
+      "url" : "https://docs.spring.io/spring-boot/docs/current/actuator-api/html/"
+    }
+  } ],
+  "paths" : {
+    "/api/v1/tasks" : {
+      "post" : {
+        "tags" : [ "Tasks" ],
+        "summary" : "Create a task",
+        "description" : "Creates a task with server-managed status and timestamps.",
+        "operationId" : "createTask",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateTaskRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Task created",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TaskResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1" : {
+      "get" : {
+        "tags" : [ "Application" ],
+        "summary" : "Get application identity",
+        "description" : "Returns the service name and current API version.",
+        "operationId" : "getApplicationInfo",
+        "responses" : {
+          "200" : {
+            "description" : "Application identity",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApplicationResponse"
+                }
+              }
+            }
+          },
+          "405" : {
+            "description" : "Unsupported HTTP method",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actuator" : {
+      "get" : {
+        "tags" : [ "Actuator" ],
+        "summary" : "Actuator root web endpoint",
+        "operationId" : "links",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/vnd.spring-boot.actuator.v3+json" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "object",
+                    "additionalProperties" : {
+                      "$ref" : "#/components/schemas/Link"
+                    }
+                  }
+                }
+              },
+              "application/vnd.spring-boot.actuator.v2+json" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "object",
+                    "additionalProperties" : {
+                      "$ref" : "#/components/schemas/Link"
+                    }
+                  }
+                }
+              },
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "object",
+                    "additionalProperties" : {
+                      "$ref" : "#/components/schemas/Link"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actuator/health" : {
+      "get" : {
+        "tags" : [ "Actuator" ],
+        "summary" : "Actuator web endpoint 'health'",
+        "operationId" : "health",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/vnd.spring-boot.actuator.v3+json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              },
+              "application/vnd.spring-boot.actuator.v2+json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              },
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "CreateTaskRequest" : {
+        "type" : "object",
+        "description" : "Task creation request",
+        "properties" : {
+          "title" : {
+            "type" : "string",
+            "description" : "Task title",
+            "example" : "Prepare release notes",
+            "minLength" : 1
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "Task description",
+            "example" : "Summarize the changes for the next release"
+          }
+        },
+        "required" : [ "description", "title" ]
+      },
+      "TaskResponse" : {
+        "type" : "object",
+        "description" : "Persisted task",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid",
+            "example" : "3f6f0f2e-3f2c-4b61-8c1b-0b3d4c5d6e7f"
+          },
+          "title" : {
+            "type" : "string",
+            "example" : "Prepare release notes"
+          },
+          "description" : {
+            "type" : "string",
+            "example" : "Summarize the changes for the next release"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "TODO", "IN_PROGRESS", "DONE" ],
+            "example" : "TODO"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "example" : "2026-01-01T12:00:00Z"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "example" : "2026-01-01T12:00:00Z"
+          }
+        }
+      },
+      "ApiError" : {
+        "type" : "object",
+        "description" : "Standard error returned by the REST API",
+        "properties" : {
+          "errorId" : {
+            "type" : "string",
+            "example" : "METHOD_NOT_ALLOWED"
+          },
+          "message" : {
+            "type" : "string",
+            "example" : "HTTP method is not supported for this resource"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "date-time",
+            "example" : "2026-01-01T12:00:00Z"
+          },
+          "correlationId" : {
+            "type" : "string",
+            "example" : "3f6f0f2e-3f2c-4b61-8c1b-0b3d4c5d6e7f"
+          }
+        }
+      },
+      "ApplicationResponse" : {
+        "type" : "object",
+        "description" : "Identity and API version of the running service",
+        "properties" : {
+          "service" : {
+            "type" : "string",
+            "example" : "task-manager"
+          },
+          "version" : {
+            "type" : "string",
+            "example" : "v1"
+          }
+        }
+      },
+      "Link" : {
+        "type" : "object",
+        "properties" : {
+          "href" : {
+            "type" : "string"
+          },
+          "templated" : {
+            "type" : "boolean"
+          }
+        }
+      }
+    }
+  }
+}

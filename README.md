@@ -33,3 +33,18 @@ mvn test
 mvn verify                 # Integration tests require a working Docker runtime
 mvn org.pitest:pitest-maven:mutationCoverage  # foundation mutation threshold: 50%
 ```
+
+## OpenAPI snapshot
+
+The committed `docs/openapi.json` is generated from the running application
+through the same PostgreSQL Testcontainers setup used by integration tests.
+Docker must be running before executing these commands:
+
+```bash
+mvn -Dopenapi.snapshot.write=true -Dit.test=OpenApiSnapshotIT verify
+mvn -Dit.test=OpenApiSnapshotIT verify
+```
+
+The first command regenerates the normalized snapshot. The second command
+fails with an actionable stale-snapshot message if the committed file differs
+from `/v3/api-docs`.
