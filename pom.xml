@@ -100,6 +100,9 @@
                     <includes>
                         <include>**/*IT.java</include>
                     </includes>
+                    <systemPropertyVariables>
+                        <openapi.snapshot.write>${openapi.snapshot.write}</openapi.snapshot.write>
+                    </systemPropertyVariables>
                 </configuration>
                 <executions>
                     <execution>
