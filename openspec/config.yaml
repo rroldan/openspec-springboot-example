@@ -30,7 +30,7 @@ rules:
 
   tasks:
     - Include a task for writing/updating Flyway migration scripts when schema changes
-    - Include a task for verifying the generated OpenAPI docs file reflect endpoint changes
+    - Include a task for verifying the generated OpenAPI docs file reflect endpoint changes and updated
     - Include a task for tests covering the new/changed behavior
 
 operations:

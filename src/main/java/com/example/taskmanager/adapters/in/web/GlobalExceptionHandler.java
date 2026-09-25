@@ -1,5 +1,6 @@
 package com.example.taskmanager.adapters.in.web;
 
+import com.example.taskmanager.application.service.TaskNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.Instant;
@@ -27,7 +29,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             HttpMessageNotReadableException.class,
             MethodArgumentNotValidException.class,
-            ConstraintViolationException.class
+            ConstraintViolationException.class,
+            MethodArgumentTypeMismatchException.class
     })
     public ResponseEntity<ApiError> handleInvalidRequest(Exception exception) {
         return error(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", "The request could not be processed");
@@ -42,6 +45,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ApiError> handleNotFound(NoResourceFoundException exception) {
         return error(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", "The requested resource was not found");
+    }
+
+    @ExceptionHandler(TaskNotFoundException.class)
+    public ResponseEntity<ApiError> handleTaskNotFound(TaskNotFoundException exception) {
+        return error(HttpStatus.NOT_FOUND, "TASK_NOT_FOUND", exception.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
