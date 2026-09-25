@@ -61,6 +61,7 @@ class OpenApiSnapshotIT {
         assertThat(document.path("info").path("title").asText()).isEqualTo("Task Manager API");
         assertThat(document.path("paths").has("/api/v1")).isTrue();
         assertThat(document.path("paths").has("/api/v1/tasks")).isTrue();
+        assertThat(document.path("paths").has("/api/v1/tasks/{taskId}")).isTrue();
         assertThat(document.path("paths").has("/actuator/health")).isTrue();
         assertThat(document.path("components").path("schemas").has("ApiError")).isTrue();
     }

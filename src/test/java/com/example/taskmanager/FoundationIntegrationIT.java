@@ -92,6 +92,19 @@ class FoundationIntegrationIT {
                 "TaskResponse");
     }
 
+    @Test
+    void documentsTaskLookupInOpenApi() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        var response = client.send(request("/v3/api-docs"), HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.body()).contains(
+                "\"/api/v1/tasks/{taskId}\"",
+                "\"getTaskById\"",
+                "\"200\"",
+                "\"404\"");
+    }
+
     private HttpRequest request(String path) {
         return HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
                 .GET()

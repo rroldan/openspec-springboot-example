@@ -1,6 +1,8 @@
 package com.example.taskmanager.adapters.in.web;
 
 import com.example.taskmanager.application.port.in.CreateTaskUseCase;
+import com.example.taskmanager.application.port.in.GetTaskByIdUseCase;
+import com.example.taskmanager.application.service.TaskNotFoundException;
 import com.example.taskmanager.domain.model.Task;
 import com.example.taskmanager.domain.model.TaskStatus;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +18,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -26,11 +29,14 @@ class TaskControllerTest {
     @Mock
     private CreateTaskUseCase useCase;
 
+    @Mock
+    private GetTaskByIdUseCase getTaskByIdUseCase;
+
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(new TaskController(useCase))
+        mockMvc = MockMvcBuilders.standaloneSetup(new TaskController(useCase, getTaskByIdUseCase))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }
@@ -61,6 +67,41 @@ class TaskControllerTest {
                         .content("""
                                 {"title":" ","description":"description"}
                                 """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorId").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.correlationId").isString());
+    }
+
+    @Test
+    void getsTaskById() throws Exception {
+        UUID id = UUID.fromString("3f6f0f2e-3f2c-4b61-8c1b-0b3d4c5d6e7f");
+        Instant timestamp = Instant.parse("2026-01-01T12:00:00Z");
+        when(getTaskByIdUseCase.getById(id)).thenReturn(new Task(
+                id, "title", "description", TaskStatus.TODO, timestamp, timestamp));
+
+        mockMvc.perform(get("/api/v1/tasks/{taskId}", id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id.toString()))
+                .andExpect(jsonPath("$.title").value("title"))
+                .andExpect(jsonPath("$.status").value("TODO"));
+    }
+
+    @Test
+    void returnsNotFoundForUnknownTask() throws Exception {
+        UUID id = UUID.fromString("3f6f0f2e-3f2c-4b61-8c1b-0b3d4c5d6e7f");
+        when(getTaskByIdUseCase.getById(id)).thenThrow(new TaskNotFoundException(id));
+
+        mockMvc.perform(get("/api/v1/tasks/{taskId}", id))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.errorId").value("TASK_NOT_FOUND"))
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.correlationId").isString());
+    }
+
+    @Test
+    void rejectsMalformedTaskId() throws Exception {
+        mockMvc.perform(get("/api/v1/tasks/not-a-uuid"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errorId").value("INVALID_REQUEST"))
                 .andExpect(jsonPath("$.timestamp").exists())
