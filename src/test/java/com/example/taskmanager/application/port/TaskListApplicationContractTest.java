@@ -49,4 +49,11 @@ class TaskListApplicationContractTest {
         assertThat(ListTasksUseCase.class.getPackageName()).startsWith("com.example.taskmanager.application");
         assertThat(TaskQueryRepository.class.getPackageName()).startsWith("com.example.taskmanager.application");
     }
+
+    @Test
+    void nullSortDirectionDefaultsToAscending() {
+        TaskSort sort = new TaskSort(TaskSort.Field.TITLE, null);
+
+        assertThat(sort.direction()).isEqualTo(TaskSort.Direction.ASC);
+    }
 }
