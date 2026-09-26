@@ -13,10 +13,10 @@
 
 ## 3. REST API
 
-- [ ] 3.1 Add the `GET /api/v1/tasks` endpoint and documented paged response DTO with `status`, `q`, `page`, `size`, and `sort` query parameters, and verify controller tests assert response items and page metadata
-- [ ] 3.2 Enforce defaults and parameter bounds and map invalid filters, sort fields/directions, and page values to the shared `INVALID_REQUEST` error response, and verify tests cover invalid inputs and size boundaries
+- [x] 3.1 Add the `GET /api/v1/tasks` endpoint and documented paged response DTO with `status`, `q`, `page`, `size`, and `sort` query parameters, and verify controller tests assert response items and page metadata
+- [x] 3.2 Enforce defaults and parameter bounds and map invalid filters, sort fields/directions, and page values to the shared `INVALID_REQUEST` error response, and verify tests cover invalid inputs and size boundaries
 
 ## 4. API Documentation and Verification
 
-- [ ] 4.1 Update the OpenAPI integration assertions and regenerate `docs/openapi.json`, then verify the snapshot includes the list endpoint, filter/pagination/sort parameters, paged response, and standard `400` response
-- [ ] 4.2 Run focused unit tests and the relevant PostgreSQL/OpenAPI integration tests, and verify all task-list scenarios pass without regressions to create or get-by-ID behavior
+- [x] 4.1 Update the OpenAPI integration assertions and regenerate `docs/openapi.json`, then verify the snapshot includes the list endpoint, filter/pagination/sort parameters, paged response, and standard `400` response
+- [x] 4.2 Run focused unit tests and the relevant PostgreSQL/OpenAPI integration tests, and verify all task-list scenarios pass without regressions to create or get-by-ID behavior
