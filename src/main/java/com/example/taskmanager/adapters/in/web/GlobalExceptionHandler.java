@@ -30,7 +30,8 @@ public class GlobalExceptionHandler {
             HttpMessageNotReadableException.class,
             MethodArgumentNotValidException.class,
             ConstraintViolationException.class,
-            MethodArgumentTypeMismatchException.class
+            MethodArgumentTypeMismatchException.class,
+            IllegalArgumentException.class
     })
     public ResponseEntity<ApiError> handleInvalidRequest(Exception exception) {
         return error(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", "The request could not be processed");
