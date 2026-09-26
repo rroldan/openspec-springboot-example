@@ -2,14 +2,14 @@
 
 ## 1. Application Contracts and Use Case
 
-- [ ] 1.1 Add application-owned task search criteria (including the constrained sort field/direction) and page result models plus the list-task input/output ports, and verify they compile without Spring Data types in the application boundary
-- [ ] 1.2 Implement the list-task service with defaults, status/search criteria, and page metadata delegation, and verify unit tests cover defaults and requested values
+- [x] 1.1 Add application-owned task search criteria (including the constrained sort field/direction) and page result models plus the list-task input/output ports, and verify they compile without Spring Data types in the application boundary
+- [x] 1.2 Implement the list-task service with defaults, status/search criteria, and page metadata delegation, and verify unit tests cover defaults and requested values
 
 ## 2. Persistence Search
 
-- [ ] 2.1 Implement optional status and escaped case-insensitive title/description substring predicates with validated single-field sorting, stable tie-breakers, and page mapping, and verify adapter tests cover combined filters, sorting, and metadata
-- [ ] 2.2 Add PostgreSQL-backed integration coverage for filtering, ordering, multiple pages, and empty results, and verify the focused integration test passes against Testcontainers
-- [ ] 2.3 Review the PostgreSQL query plan for the expected search use; if indexing is justified, add a Flyway migration and verify all migrations run on a fresh schema
+- [x] 2.1 Implement optional status and escaped case-insensitive title/description substring predicates with validated single-field sorting, stable tie-breakers, and page mapping, and verify adapter tests cover combined filters, sorting, and metadata
+- [x] 2.2 Add PostgreSQL-backed integration coverage for filtering, ordering, multiple pages, and empty results, and verify the focused integration test passes against Testcontainers
+- [x] 2.3 Review the PostgreSQL query plan for the expected search use; if indexing is justified, add a Flyway migration and verify all migrations run on a fresh schema
 
 ## 3. REST API
 

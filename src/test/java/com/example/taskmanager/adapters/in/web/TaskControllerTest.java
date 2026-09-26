@@ -1,7 +1,9 @@
 package com.example.taskmanager.adapters.in.web;
 
+import com.example.taskmanager.application.model.TaskPage;
 import com.example.taskmanager.application.port.in.CreateTaskUseCase;
 import com.example.taskmanager.application.port.in.GetTaskByIdUseCase;
+import com.example.taskmanager.application.port.in.ListTasksUseCase;
 import com.example.taskmanager.application.service.TaskNotFoundException;
 import com.example.taskmanager.domain.model.Task;
 import com.example.taskmanager.domain.model.TaskStatus;
@@ -16,6 +18,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.time.Instant;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -32,13 +35,34 @@ class TaskControllerTest {
     @Mock
     private GetTaskByIdUseCase getTaskByIdUseCase;
 
+    @Mock
+    private ListTasksUseCase listTasksUseCase;
+
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(new TaskController(useCase, getTaskByIdUseCase))
+        mockMvc = MockMvcBuilders.standaloneSetup(new TaskController(useCase, getTaskByIdUseCase, listTasksUseCase))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
+    }
+
+    @Test
+    void listsTasks() throws Exception {
+        Instant timestamp = Instant.parse("2026-01-01T12:00:00Z");
+        Task task = new Task(UUID.fromString("3f6f0f2e-3f2c-4b61-8c1b-0b3d4c5d6e7f"),
+                "title", "description", TaskStatus.TODO, timestamp, timestamp);
+        TaskPage page = new TaskPage(java.util.List.of(task), 0, 20, 1, 1);
+        when(listTasksUseCase.list(any())).thenReturn(page);
+
+        mockMvc.perform(get("/api/v1/tasks"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items").isArray())
+                .andExpect(jsonPath("$.items[0].title").value("title"))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1));
     }
 
     @Test

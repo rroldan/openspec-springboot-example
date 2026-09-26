@@ -2,6 +2,7 @@ package com.example.taskmanager.adapters.in.web;
 
 import com.example.taskmanager.application.port.in.CreateTaskUseCase;
 import com.example.taskmanager.application.port.in.GetTaskByIdUseCase;
+import com.example.taskmanager.application.port.in.ListTasksUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -27,10 +29,32 @@ public class TaskController {
 
     private final CreateTaskUseCase createTaskUseCase;
     private final GetTaskByIdUseCase getTaskByIdUseCase;
+    private final ListTasksUseCase listTasksUseCase;
 
-    public TaskController(CreateTaskUseCase createTaskUseCase, GetTaskByIdUseCase getTaskByIdUseCase) {
+    public TaskController(CreateTaskUseCase createTaskUseCase, GetTaskByIdUseCase getTaskByIdUseCase,
+                          ListTasksUseCase listTasksUseCase) {
         this.createTaskUseCase = createTaskUseCase;
         this.getTaskByIdUseCase = getTaskByIdUseCase;
+        this.listTasksUseCase = listTasksUseCase;
+    }
+
+    @GetMapping
+    @Operation(summary = "List tasks", description = "Returns a paginated list of tasks with optional filtering and sorting.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Tasks found",
+                    content = @Content(schema = @Schema(implementation = TaskListResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request parameters",
+                    content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    public ResponseEntity<TaskListResponse> listTasks(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String sort) {
+        // Task 7 will add validation and parameter mapping here
+        return ResponseEntity.ok(TaskListResponse.from(
+                listTasksUseCase.list(null))); // placeholder
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
