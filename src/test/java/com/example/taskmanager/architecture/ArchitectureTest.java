@@ -22,6 +22,12 @@ class ArchitectureTest {
                     .resideInAnyPackage("..adapters..", "..infrastructure..");
 
     @ArchTest
+    static final ArchRule applicationDoesNotDependOnSpringData =
+            noClasses().that().resideInAnyPackage("..application..")
+                    .should().dependOnClassesThat()
+                    .resideInAnyPackage("org.springframework.data..");
+
+    @ArchTest
     static final ArchRule adaptersDoNotDependOnInfrastructure =
             noClasses().that().resideInAnyPackage("..adapters..")
                     .should().dependOnClassesThat()
