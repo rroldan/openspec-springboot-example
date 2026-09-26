@@ -66,6 +66,48 @@ class TaskControllerTest {
     }
 
     @Test
+    void rejectsNegativePage() throws Exception {
+        mockMvc.perform(get("/api/v1/tasks").param("page", "-1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorId").value("INVALID_REQUEST"));
+    }
+
+    @Test
+    void rejectsSizeBelowMinimum() throws Exception {
+        mockMvc.perform(get("/api/v1/tasks").param("size", "0"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorId").value("INVALID_REQUEST"));
+    }
+
+    @Test
+    void rejectsSizeAboveMaximum() throws Exception {
+        mockMvc.perform(get("/api/v1/tasks").param("size", "101"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorId").value("INVALID_REQUEST"));
+    }
+
+    @Test
+    void rejectsInvalidStatus() throws Exception {
+        mockMvc.perform(get("/api/v1/tasks").param("status", "INVALID"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorId").value("INVALID_REQUEST"));
+    }
+
+    @Test
+    void rejectsInvalidSortField() throws Exception {
+        mockMvc.perform(get("/api/v1/tasks").param("sort", "invalid,asc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorId").value("INVALID_REQUEST"));
+    }
+
+    @Test
+    void rejectsInvalidSortDirection() throws Exception {
+        mockMvc.perform(get("/api/v1/tasks").param("sort", "created_at,invalid"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorId").value("INVALID_REQUEST"));
+    }
+
+    @Test
     void createsTask() throws Exception {
         Instant timestamp = Instant.parse("2026-01-01T12:00:00Z");
         when(useCase.create(anyString(), anyString())).thenReturn(new Task(

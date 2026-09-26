@@ -52,9 +52,60 @@ public class TaskController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String sort) {
-        // Task 7 will add validation and parameter mapping here
-        return ResponseEntity.ok(TaskListResponse.from(
-                listTasksUseCase.list(null))); // placeholder
+        // Validate and map parameters
+        if (page < 0) {
+            throw new IllegalArgumentException("page must be non-negative");
+        }
+        if (size < 1 || size > 100) {
+            throw new IllegalArgumentException("size must be between 1 and 100");
+        }
+
+        // Parse status filter
+        com.example.taskmanager.domain.model.TaskStatus parsedStatus = null;
+        if (status != null && !status.isBlank()) {
+            try {
+                parsedStatus = com.example.taskmanager.domain.model.TaskStatus.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("invalid status: " + status);
+            }
+        }
+
+        // Parse sort parameter
+        com.example.taskmanager.application.model.TaskSort parsedSort = null;
+        if (sort != null && !sort.isBlank()) {
+            String[] parts = sort.split(",");
+            if (parts.length > 2 || parts.length == 0) {
+                throw new IllegalArgumentException("invalid sort format");
+            }
+            
+            String field = parts[0].trim();
+            String direction = parts.length > 1 ? parts[1].trim() : "asc";
+            
+            com.example.taskmanager.application.model.TaskSort.Field sortField;
+            try {
+                sortField = com.example.taskmanager.application.model.TaskSort.Field.valueOf(field.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("invalid sort field: " + field);
+            }
+            
+            com.example.taskmanager.application.model.TaskSort.Direction sortDirection;
+            try {
+                sortDirection = com.example.taskmanager.application.model.TaskSort.Direction.valueOf(direction.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("invalid sort direction: " + direction);
+            }
+            
+            parsedSort = new com.example.taskmanager.application.model.TaskSort(sortField, sortDirection);
+        }
+
+        // Normalize empty q to null
+        String normalizedQ = (q != null && !q.isBlank()) ? q : null;
+
+        com.example.taskmanager.application.model.TaskSearchCriteria criteria =
+                new com.example.taskmanager.application.model.TaskSearchCriteria(
+                        parsedStatus, normalizedQ, page, size, parsedSort);
+
+        return ResponseEntity.ok(TaskListResponse.from(listTasksUseCase.list(criteria)));
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
