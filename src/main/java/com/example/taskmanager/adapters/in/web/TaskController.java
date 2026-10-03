@@ -3,6 +3,7 @@ package com.example.taskmanager.adapters.in.web;
 import com.example.taskmanager.application.port.in.CreateTaskUseCase;
 import com.example.taskmanager.application.port.in.GetTaskByIdUseCase;
 import com.example.taskmanager.application.port.in.ListTasksUseCase;
+import com.example.taskmanager.application.port.in.UpdateTaskUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import java.util.UUID;
 
@@ -30,12 +32,14 @@ public class TaskController {
     private final CreateTaskUseCase createTaskUseCase;
     private final GetTaskByIdUseCase getTaskByIdUseCase;
     private final ListTasksUseCase listTasksUseCase;
+    private final UpdateTaskUseCase updateTaskUseCase;
 
     public TaskController(CreateTaskUseCase createTaskUseCase, GetTaskByIdUseCase getTaskByIdUseCase,
-                          ListTasksUseCase listTasksUseCase) {
+                          ListTasksUseCase listTasksUseCase, UpdateTaskUseCase updateTaskUseCase) {
         this.createTaskUseCase = createTaskUseCase;
         this.getTaskByIdUseCase = getTaskByIdUseCase;
         this.listTasksUseCase = listTasksUseCase;
+        this.updateTaskUseCase = updateTaskUseCase;
     }
 
     @GetMapping
@@ -133,5 +137,21 @@ public class TaskController {
     })
     public ResponseEntity<TaskResponse> getTaskById(@PathVariable UUID taskId) {
         return ResponseEntity.ok(TaskResponse.from(getTaskByIdUseCase.getById(taskId)));
+    }
+
+    @PutMapping(path = "/{taskId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Replace a task", description = "Replaces a task's title, description, and status.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Task updated",
+                    content = @Content(schema = @Schema(implementation = TaskResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))),
+            @ApiResponse(responseCode = "404", description = "Task not found",
+                    content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    public ResponseEntity<TaskResponse> updateTask(
+            @PathVariable UUID taskId, @Valid @RequestBody UpdateTaskRequest request) {
+        return ResponseEntity.ok(TaskResponse.from(updateTaskUseCase.update(
+                taskId, request.title(), request.description(), request.status())));
     }
 }
