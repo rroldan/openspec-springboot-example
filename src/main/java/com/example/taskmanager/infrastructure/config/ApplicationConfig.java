@@ -6,6 +6,7 @@ import com.example.taskmanager.application.port.in.DeleteTaskUseCase;
 import com.example.taskmanager.application.port.in.GetTaskByIdUseCase;
 import com.example.taskmanager.application.port.in.ListTasksUseCase;
 import com.example.taskmanager.application.port.in.UpdateTaskUseCase;
+import com.example.taskmanager.application.port.in.UpdateTaskStatusUseCase;
 import com.example.taskmanager.application.port.out.TaskRepository;
 import com.example.taskmanager.application.port.out.TaskQueryRepository;
 import com.example.taskmanager.application.service.ApplicationInfoService;
@@ -14,6 +15,7 @@ import com.example.taskmanager.application.service.DeleteTaskService;
 import com.example.taskmanager.application.service.GetTaskByIdService;
 import com.example.taskmanager.application.service.ListTasksService;
 import com.example.taskmanager.application.service.UpdateTaskService;
+import com.example.taskmanager.application.service.UpdateTaskStatusService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -53,5 +55,10 @@ public class ApplicationConfig {
     @Bean
     public UpdateTaskUseCase updateTaskUseCase(TaskRepository taskRepository) {
         return new UpdateTaskService(taskRepository, Clock.systemUTC());
+    }
+
+    @Bean
+    public UpdateTaskStatusUseCase updateTaskStatusUseCase(TaskRepository taskRepository) {
+        return new UpdateTaskStatusService(taskRepository, Clock.systemUTC());
     }
 }
