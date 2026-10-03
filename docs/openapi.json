@@ -6,18 +6,18 @@
     "version" : "v1"
   },
   "tags" : [ {
-    "name" : "Application",
-    "description" : "Versioned application foundation endpoints"
-  }, {
-    "name" : "Tasks",
-    "description" : "Task management endpoints"
-  }, {
     "name" : "Actuator",
     "description" : "Monitor and interact",
     "externalDocs" : {
       "description" : "Spring Boot Actuator Web API Documentation",
       "url" : "https://docs.spring.io/spring-boot/docs/current/actuator-api/html/"
     }
+  }, {
+    "name" : "Application",
+    "description" : "Versioned application foundation endpoints"
+  }, {
+    "name" : "Tasks",
+    "description" : "Task management endpoints"
   } ],
   "paths" : {
     "/api/v1/tasks/{taskId}" : {
@@ -105,6 +105,46 @@
           },
           "400" : {
             "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Task not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "Tasks" ],
+        "summary" : "Delete a task",
+        "description" : "Permanently deletes a task by its unique identifier.",
+        "operationId" : "deleteTask",
+        "parameters" : [ {
+          "name" : "taskId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Task deleted"
+          },
+          "400" : {
+            "description" : "Invalid task identifier",
             "content" : {
               "application/json" : {
                 "schema" : {

@@ -2,6 +2,7 @@ package com.example.taskmanager.adapters.in.web;
 
 import com.example.taskmanager.application.model.TaskPage;
 import com.example.taskmanager.application.port.in.CreateTaskUseCase;
+import com.example.taskmanager.application.port.in.DeleteTaskUseCase;
 import com.example.taskmanager.application.port.in.GetTaskByIdUseCase;
 import com.example.taskmanager.application.port.in.ListTasksUseCase;
 import com.example.taskmanager.application.port.in.UpdateTaskUseCase;
@@ -21,11 +22,15 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,6 +38,9 @@ class TaskControllerTest {
 
     @Mock
     private CreateTaskUseCase useCase;
+
+    @Mock
+    private DeleteTaskUseCase deleteTaskUseCase;
 
     @Mock
     private GetTaskByIdUseCase getTaskByIdUseCase;
@@ -48,7 +56,8 @@ class TaskControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(
-                        new TaskController(useCase, getTaskByIdUseCase, listTasksUseCase, updateTaskUseCase))
+                        new TaskController(useCase, deleteTaskUseCase, getTaskByIdUseCase,
+                                listTasksUseCase, updateTaskUseCase))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }
@@ -273,6 +282,38 @@ class TaskControllerTest {
     @Test
     void rejectsMalformedTaskId() throws Exception {
         mockMvc.perform(get("/api/v1/tasks/not-a-uuid"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorId").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.correlationId").isString());
+    }
+
+    @Test
+    void deletesTask() throws Exception {
+        UUID id = UUID.fromString("3f6f0f2e-3f2c-4b61-8c1b-0b3d4c5d6e7f");
+
+        mockMvc.perform(delete("/api/v1/tasks/{taskId}", id))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+
+        verify(deleteTaskUseCase).delete(id);
+    }
+
+    @Test
+    void returnsNotFoundWhenDeletingUnknownTask() throws Exception {
+        UUID id = UUID.fromString("3f6f0f2e-3f2c-4b61-8c1b-0b3d4c5d6e7f");
+        doThrow(new TaskNotFoundException(id)).when(deleteTaskUseCase).delete(id);
+
+        mockMvc.perform(delete("/api/v1/tasks/{taskId}", id))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.errorId").value("TASK_NOT_FOUND"))
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.correlationId").isString());
+    }
+
+    @Test
+    void rejectsMalformedTaskIdWhenDeleting() throws Exception {
+        mockMvc.perform(delete("/api/v1/tasks/not-a-uuid"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errorId").value("INVALID_REQUEST"))
                 .andExpect(jsonPath("$.timestamp").exists())

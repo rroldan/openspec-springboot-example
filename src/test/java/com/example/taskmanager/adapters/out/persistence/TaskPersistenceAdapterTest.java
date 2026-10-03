@@ -33,4 +33,11 @@ class TaskPersistenceAdapterTest {
         assertThat(task.title()).isEqualTo("title");
         verify(repository).findById(TASK_ID);
     }
+
+    @Test
+    void deletesTaskById() {
+        adapter.deleteById(TASK_ID);
+
+        verify(repository).deleteById(TASK_ID);
+    }
 }
