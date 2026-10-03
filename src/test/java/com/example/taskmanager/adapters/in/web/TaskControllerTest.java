@@ -6,6 +6,7 @@ import com.example.taskmanager.application.port.in.DeleteTaskUseCase;
 import com.example.taskmanager.application.port.in.GetTaskByIdUseCase;
 import com.example.taskmanager.application.port.in.ListTasksUseCase;
 import com.example.taskmanager.application.port.in.UpdateTaskUseCase;
+import com.example.taskmanager.application.port.in.UpdateTaskStatusUseCase;
 import com.example.taskmanager.application.service.TaskNotFoundException;
 import com.example.taskmanager.domain.model.Task;
 import com.example.taskmanager.domain.model.TaskStatus;
@@ -29,6 +30,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -51,13 +53,16 @@ class TaskControllerTest {
     @Mock
     private UpdateTaskUseCase updateTaskUseCase;
 
+    @Mock
+    private UpdateTaskStatusUseCase updateTaskStatusUseCase;
+
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(
                         new TaskController(useCase, deleteTaskUseCase, getTaskByIdUseCase,
-                                listTasksUseCase, updateTaskUseCase))
+                                listTasksUseCase, updateTaskUseCase, updateTaskStatusUseCase))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }
@@ -260,6 +265,72 @@ class TaskControllerTest {
                         .contentType("application/json")
                         .content("""
                                 {"title":"title","description":"description","status":"TODO"}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorId").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.correlationId").isString());
+    }
+
+    @Test
+    void updatesOnlyTaskStatus() throws Exception {
+        UUID id = UUID.fromString("3f6f0f2e-3f2c-4b61-8c1b-0b3d4c5d6e7f");
+        Instant createdAt = Instant.parse("2026-01-01T12:00:00Z");
+        Instant updatedAt = Instant.parse("2026-01-02T12:00:00Z");
+        when(updateTaskStatusUseCase.updateStatus(id, TaskStatus.IN_PROGRESS))
+                .thenReturn(new Task(id, "original title", "original description",
+                        TaskStatus.IN_PROGRESS, createdAt, updatedAt));
+
+        mockMvc.perform(patch("/api/v1/tasks/{taskId}/status", id)
+                        .contentType("application/json")
+                        .content("""
+                                {"status":"IN_PROGRESS"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id.toString()))
+                .andExpect(jsonPath("$.title").value("original title"))
+                .andExpect(jsonPath("$.description").value("original description"))
+                .andExpect(jsonPath("$.status").value("IN_PROGRESS"))
+                .andExpect(jsonPath("$.createdAt").value("2026-01-01T12:00:00Z"))
+                .andExpect(jsonPath("$.updatedAt").value("2026-01-02T12:00:00Z"));
+    }
+
+    @Test
+    void rejectsMissingNullAndUnsupportedStatus() throws Exception {
+        for (String body : new String[]{"{}", "{\"status\":null}", "{\"status\":\"INVALID\"}"}) {
+            mockMvc.perform(patch("/api/v1/tasks/{taskId}/status", UUID.randomUUID())
+                            .contentType("application/json")
+                            .content(body))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.errorId").value("INVALID_REQUEST"))
+                    .andExpect(jsonPath("$.timestamp").exists())
+                    .andExpect(jsonPath("$.correlationId").isString());
+        }
+    }
+
+    @Test
+    void returnsNotFoundWhenUpdatingStatusForUnknownTask() throws Exception {
+        UUID id = UUID.fromString("3f6f0f2e-3f2c-4b61-8c1b-0b3d4c5d6e7f");
+        when(updateTaskStatusUseCase.updateStatus(id, TaskStatus.DONE))
+                .thenThrow(new TaskNotFoundException(id));
+
+        mockMvc.perform(patch("/api/v1/tasks/{taskId}/status", id)
+                        .contentType("application/json")
+                        .content("""
+                                {"status":"DONE"}
+                                """))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.errorId").value("TASK_NOT_FOUND"))
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.correlationId").isString());
+    }
+
+    @Test
+    void rejectsMalformedIdWhenUpdatingTaskStatus() throws Exception {
+        mockMvc.perform(patch("/api/v1/tasks/not-a-uuid/status")
+                        .contentType("application/json")
+                        .content("""
+                                {"status":"DONE"}
                                 """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errorId").value("INVALID_REQUEST"))

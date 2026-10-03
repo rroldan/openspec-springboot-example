@@ -274,6 +274,65 @@
         }
       }
     },
+    "/api/v1/tasks/{taskId}/status" : {
+      "patch" : {
+        "tags" : [ "Tasks" ],
+        "summary" : "Update a task's status",
+        "description" : "Changes only a task's lifecycle status.",
+        "operationId" : "updateTaskStatus",
+        "parameters" : [ {
+          "name" : "taskId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateTaskStatusRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Task status updated",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TaskResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Task not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1" : {
       "get" : {
         "tags" : [ "Application" ],
@@ -481,6 +540,19 @@
           }
         },
         "required" : [ "description", "title" ]
+      },
+      "UpdateTaskStatusRequest" : {
+        "type" : "object",
+        "description" : "Task status update request",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "description" : "Task lifecycle status",
+            "enum" : [ "TODO", "IN_PROGRESS", "DONE" ],
+            "example" : "IN_PROGRESS"
+          }
+        },
+        "required" : [ "status" ]
       },
       "ApplicationResponse" : {
         "type" : "object",

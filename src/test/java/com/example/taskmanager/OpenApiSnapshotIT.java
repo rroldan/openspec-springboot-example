@@ -54,7 +54,6 @@ class OpenApiSnapshotIT {
 
         assertThat(response.statusCode()).isEqualTo(200);
         String normalized = OpenApiSnapshot.normalize(objectMapper, response.body());
-        OpenApiSnapshot.writeOrVerify(SNAPSHOT, normalized, isWriteMode());
 
         JsonNode document = objectMapper.readTree(normalized);
         assertThat(document.path("openapi").asText()).startsWith("3.");
@@ -75,6 +74,20 @@ class OpenApiSnapshotIT {
                 .contains("title", "description", "status");
         assertThat(updateRequest.path("properties").path("status").path("enum").toString())
                 .contains("TODO", "IN_PROGRESS", "DONE");
+        JsonNode updateStatus = document.path("paths").path("/api/v1/tasks/{taskId}/status").path("patch");
+        assertThat(updateStatus.path("operationId").asText()).isEqualTo("updateTaskStatus");
+        assertThat(updateStatus.path("requestBody").path("required").asBoolean()).isTrue();
+        assertThat(updateStatus.path("requestBody").path("content").path("application/json")
+                .path("schema").path("$ref").asText()).isEqualTo(
+                "#/components/schemas/UpdateTaskStatusRequest");
+        assertThat(updateStatus.path("responses").has("200")).isTrue();
+        assertThat(updateStatus.path("responses").has("400")).isTrue();
+        assertThat(updateStatus.path("responses").has("404")).isTrue();
+        JsonNode updateStatusRequest = document.path("components").path("schemas")
+                .path("UpdateTaskStatusRequest");
+        assertThat(updateStatusRequest.path("required").toString()).contains("status");
+        assertThat(updateStatusRequest.path("properties").path("status").path("enum").toString())
+                .contains("TODO", "IN_PROGRESS", "DONE");
         JsonNode deleteTask = document.path("paths").path("/api/v1/tasks/{taskId}").path("delete");
         assertThat(deleteTask.path("operationId").asText()).isEqualTo("deleteTask");
         assertThat(deleteTask.path("responses").has("204")).isTrue();
@@ -83,6 +96,7 @@ class OpenApiSnapshotIT {
         assertThat(deleteTask.path("responses").has("404")).isTrue();
         assertThat(document.path("paths").has("/actuator/health")).isTrue();
         assertThat(document.path("components").path("schemas").has("ApiError")).isTrue();
+        OpenApiSnapshot.writeOrVerify(SNAPSHOT, normalized, isWriteMode());
     }
 
     private boolean isWriteMode() {

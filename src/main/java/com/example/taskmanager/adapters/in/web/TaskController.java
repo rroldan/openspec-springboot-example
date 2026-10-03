@@ -5,6 +5,7 @@ import com.example.taskmanager.application.port.in.DeleteTaskUseCase;
 import com.example.taskmanager.application.port.in.GetTaskByIdUseCase;
 import com.example.taskmanager.application.port.in.ListTasksUseCase;
 import com.example.taskmanager.application.port.in.UpdateTaskUseCase;
+import com.example.taskmanager.application.port.in.UpdateTaskStatusUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 
 import java.util.UUID;
 
@@ -36,15 +38,18 @@ public class TaskController {
     private final GetTaskByIdUseCase getTaskByIdUseCase;
     private final ListTasksUseCase listTasksUseCase;
     private final UpdateTaskUseCase updateTaskUseCase;
+    private final UpdateTaskStatusUseCase updateTaskStatusUseCase;
 
     public TaskController(CreateTaskUseCase createTaskUseCase, DeleteTaskUseCase deleteTaskUseCase,
                           GetTaskByIdUseCase getTaskByIdUseCase,
-                          ListTasksUseCase listTasksUseCase, UpdateTaskUseCase updateTaskUseCase) {
+                          ListTasksUseCase listTasksUseCase, UpdateTaskUseCase updateTaskUseCase,
+                          UpdateTaskStatusUseCase updateTaskStatusUseCase) {
         this.createTaskUseCase = createTaskUseCase;
         this.deleteTaskUseCase = deleteTaskUseCase;
         this.getTaskByIdUseCase = getTaskByIdUseCase;
         this.listTasksUseCase = listTasksUseCase;
         this.updateTaskUseCase = updateTaskUseCase;
+        this.updateTaskStatusUseCase = updateTaskStatusUseCase;
     }
 
     @GetMapping
@@ -158,6 +163,22 @@ public class TaskController {
             @PathVariable UUID taskId, @Valid @RequestBody UpdateTaskRequest request) {
         return ResponseEntity.ok(TaskResponse.from(updateTaskUseCase.update(
                 taskId, request.title(), request.description(), request.status())));
+    }
+
+    @PatchMapping(path = "/{taskId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Update a task's status", description = "Changes only a task's lifecycle status.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Task status updated",
+                    content = @Content(schema = @Schema(implementation = TaskResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))),
+            @ApiResponse(responseCode = "404", description = "Task not found",
+                    content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    public ResponseEntity<TaskResponse> updateTaskStatus(
+            @PathVariable UUID taskId, @Valid @RequestBody UpdateTaskStatusRequest request) {
+        return ResponseEntity.ok(TaskResponse.from(
+                updateTaskStatusUseCase.updateStatus(taskId, request.status())));
     }
 
     @DeleteMapping("/{taskId}")
