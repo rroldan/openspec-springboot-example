@@ -41,6 +41,11 @@ public class TaskPersistenceAdapter implements TaskRepository, TaskQueryReposito
     }
 
     @Override
+    public void deleteById(UUID id) {
+        repository.deleteById(id);
+    }
+
+    @Override
     public TaskPage findAll(TaskSearchCriteria criteria) {
         Page<TaskJpaEntity> page = repository.findAll(toSpecification(criteria), toPageable(criteria));
         return new TaskPage(

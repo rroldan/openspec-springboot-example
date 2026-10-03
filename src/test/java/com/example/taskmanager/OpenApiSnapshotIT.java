@@ -75,6 +75,12 @@ class OpenApiSnapshotIT {
                 .contains("title", "description", "status");
         assertThat(updateRequest.path("properties").path("status").path("enum").toString())
                 .contains("TODO", "IN_PROGRESS", "DONE");
+        JsonNode deleteTask = document.path("paths").path("/api/v1/tasks/{taskId}").path("delete");
+        assertThat(deleteTask.path("operationId").asText()).isEqualTo("deleteTask");
+        assertThat(deleteTask.path("responses").has("204")).isTrue();
+        assertThat(deleteTask.path("responses").path("204").has("content")).isFalse();
+        assertThat(deleteTask.path("responses").has("400")).isTrue();
+        assertThat(deleteTask.path("responses").has("404")).isTrue();
         assertThat(document.path("paths").has("/actuator/health")).isTrue();
         assertThat(document.path("components").path("schemas").has("ApiError")).isTrue();
     }

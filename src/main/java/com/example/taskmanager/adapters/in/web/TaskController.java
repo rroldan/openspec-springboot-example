@@ -1,6 +1,7 @@
 package com.example.taskmanager.adapters.in.web;
 
 import com.example.taskmanager.application.port.in.CreateTaskUseCase;
+import com.example.taskmanager.application.port.in.DeleteTaskUseCase;
 import com.example.taskmanager.application.port.in.GetTaskByIdUseCase;
 import com.example.taskmanager.application.port.in.ListTasksUseCase;
 import com.example.taskmanager.application.port.in.UpdateTaskUseCase;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import java.util.UUID;
 
@@ -30,13 +32,16 @@ import java.util.UUID;
 public class TaskController {
 
     private final CreateTaskUseCase createTaskUseCase;
+    private final DeleteTaskUseCase deleteTaskUseCase;
     private final GetTaskByIdUseCase getTaskByIdUseCase;
     private final ListTasksUseCase listTasksUseCase;
     private final UpdateTaskUseCase updateTaskUseCase;
 
-    public TaskController(CreateTaskUseCase createTaskUseCase, GetTaskByIdUseCase getTaskByIdUseCase,
+    public TaskController(CreateTaskUseCase createTaskUseCase, DeleteTaskUseCase deleteTaskUseCase,
+                          GetTaskByIdUseCase getTaskByIdUseCase,
                           ListTasksUseCase listTasksUseCase, UpdateTaskUseCase updateTaskUseCase) {
         this.createTaskUseCase = createTaskUseCase;
+        this.deleteTaskUseCase = deleteTaskUseCase;
         this.getTaskByIdUseCase = getTaskByIdUseCase;
         this.listTasksUseCase = listTasksUseCase;
         this.updateTaskUseCase = updateTaskUseCase;
@@ -153,5 +158,19 @@ public class TaskController {
             @PathVariable UUID taskId, @Valid @RequestBody UpdateTaskRequest request) {
         return ResponseEntity.ok(TaskResponse.from(updateTaskUseCase.update(
                 taskId, request.title(), request.description(), request.status())));
+    }
+
+    @DeleteMapping("/{taskId}")
+    @Operation(summary = "Delete a task", description = "Permanently deletes a task by its unique identifier.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Task deleted"),
+            @ApiResponse(responseCode = "400", description = "Invalid task identifier",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))),
+            @ApiResponse(responseCode = "404", description = "Task not found",
+                    content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    public ResponseEntity<Void> deleteTask(@PathVariable UUID taskId) {
+        deleteTaskUseCase.delete(taskId);
+        return ResponseEntity.noContent().build();
     }
 }

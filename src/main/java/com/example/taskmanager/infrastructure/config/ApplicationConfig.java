@@ -2,6 +2,7 @@ package com.example.taskmanager.infrastructure.config;
 
 import com.example.taskmanager.application.port.in.GetApplicationInfoUseCase;
 import com.example.taskmanager.application.port.in.CreateTaskUseCase;
+import com.example.taskmanager.application.port.in.DeleteTaskUseCase;
 import com.example.taskmanager.application.port.in.GetTaskByIdUseCase;
 import com.example.taskmanager.application.port.in.ListTasksUseCase;
 import com.example.taskmanager.application.port.in.UpdateTaskUseCase;
@@ -9,6 +10,7 @@ import com.example.taskmanager.application.port.out.TaskRepository;
 import com.example.taskmanager.application.port.out.TaskQueryRepository;
 import com.example.taskmanager.application.service.ApplicationInfoService;
 import com.example.taskmanager.application.service.TaskCreationService;
+import com.example.taskmanager.application.service.DeleteTaskService;
 import com.example.taskmanager.application.service.GetTaskByIdService;
 import com.example.taskmanager.application.service.ListTasksService;
 import com.example.taskmanager.application.service.UpdateTaskService;
@@ -36,6 +38,11 @@ public class ApplicationConfig {
     @Bean
     public GetTaskByIdUseCase getTaskByIdUseCase(TaskRepository taskRepository) {
         return new GetTaskByIdService(taskRepository);
+    }
+
+    @Bean
+    public DeleteTaskUseCase deleteTaskUseCase(TaskRepository taskRepository) {
+        return new DeleteTaskService(taskRepository);
     }
 
     @Bean
