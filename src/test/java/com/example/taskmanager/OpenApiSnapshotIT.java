@@ -62,6 +62,19 @@ class OpenApiSnapshotIT {
         assertThat(document.path("paths").has("/api/v1")).isTrue();
         assertThat(document.path("paths").has("/api/v1/tasks")).isTrue();
         assertThat(document.path("paths").has("/api/v1/tasks/{taskId}")).isTrue();
+        JsonNode updateTask = document.path("paths").path("/api/v1/tasks/{taskId}").path("put");
+        assertThat(updateTask.path("operationId").asText()).isEqualTo("updateTask");
+        assertThat(updateTask.path("requestBody").path("required").asBoolean()).isTrue();
+        assertThat(updateTask.path("requestBody").path("content").path("application/json")
+                .path("schema").path("$ref").asText()).isEqualTo("#/components/schemas/UpdateTaskRequest");
+        assertThat(updateTask.path("responses").has("200")).isTrue();
+        assertThat(updateTask.path("responses").has("400")).isTrue();
+        assertThat(updateTask.path("responses").has("404")).isTrue();
+        JsonNode updateRequest = document.path("components").path("schemas").path("UpdateTaskRequest");
+        assertThat(updateRequest.path("required").toString())
+                .contains("title", "description", "status");
+        assertThat(updateRequest.path("properties").path("status").path("enum").toString())
+                .contains("TODO", "IN_PROGRESS", "DONE");
         assertThat(document.path("paths").has("/actuator/health")).isTrue();
         assertThat(document.path("components").path("schemas").has("ApiError")).isTrue();
     }

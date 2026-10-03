@@ -20,6 +20,112 @@
     }
   } ],
   "paths" : {
+    "/api/v1/tasks/{taskId}" : {
+      "get" : {
+        "tags" : [ "Tasks" ],
+        "summary" : "Get a task by ID",
+        "description" : "Returns a persisted task by its unique identifier.",
+        "operationId" : "getTaskById",
+        "parameters" : [ {
+          "name" : "taskId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Task found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TaskResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid task identifier",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Task not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "Tasks" ],
+        "summary" : "Replace a task",
+        "description" : "Replaces a task's title, description, and status.",
+        "operationId" : "updateTask",
+        "parameters" : [ {
+          "name" : "taskId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateTaskRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Task updated",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TaskResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Task not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/tasks" : {
       "get" : {
         "tags" : [ "Tasks" ],
@@ -158,55 +264,6 @@
         }
       }
     },
-    "/api/v1/tasks/{taskId}" : {
-      "get" : {
-        "tags" : [ "Tasks" ],
-        "summary" : "Get a task by ID",
-        "description" : "Returns a persisted task by its unique identifier.",
-        "operationId" : "getTaskById",
-        "parameters" : [ {
-          "name" : "taskId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string",
-            "format" : "uuid"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Task found",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/TaskResponse"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Invalid task identifier",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "Task not found",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/actuator" : {
       "get" : {
         "tags" : [ "Actuator" ],
@@ -286,9 +343,9 @@
   },
   "components" : {
     "schemas" : {
-      "CreateTaskRequest" : {
+      "UpdateTaskRequest" : {
         "type" : "object",
-        "description" : "Task creation request",
+        "description" : "Task replacement request",
         "properties" : {
           "title" : {
             "type" : "string",
@@ -300,9 +357,15 @@
             "type" : "string",
             "description" : "Task description",
             "example" : "Summarize the changes for the next release"
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "Task lifecycle status",
+            "enum" : [ "TODO", "IN_PROGRESS", "DONE" ],
+            "example" : "IN_PROGRESS"
           }
         },
-        "required" : [ "description", "title" ]
+        "required" : [ "description", "status", "title" ]
       },
       "TaskResponse" : {
         "type" : "object",
@@ -360,6 +423,24 @@
             "example" : "3f6f0f2e-3f2c-4b61-8c1b-0b3d4c5d6e7f"
           }
         }
+      },
+      "CreateTaskRequest" : {
+        "type" : "object",
+        "description" : "Task creation request",
+        "properties" : {
+          "title" : {
+            "type" : "string",
+            "description" : "Task title",
+            "example" : "Prepare release notes",
+            "minLength" : 1
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "Task description",
+            "example" : "Summarize the changes for the next release"
+          }
+        },
+        "required" : [ "description", "title" ]
       },
       "ApplicationResponse" : {
         "type" : "object",
